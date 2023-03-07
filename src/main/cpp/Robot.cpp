@@ -34,6 +34,7 @@ const int kPidginID = 15;
 const int kPCMID = 0;
 const int kSolenoid1Channel = 0;
 const int kSolenoid2Channel = 1;
+const int kSolenoid3Channel = 2;
 // Define drive station controller IDs
 const int kDriverPort = 0;
 const int kGrabberPort = 1;
@@ -51,6 +52,7 @@ rev::CANSparkMax pivotWrist{kWristPivotMotorID, rev::CANSparkMax::MotorType::kBr
 // Define solenoid objects
 frc::Solenoid solenoid1{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid1Channel};
 frc::Solenoid solenoid2{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid2Channel};
+frc::Solenoid solenoid3{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid3Channel};
 // Define Pigeon IMU object
 PigeonIMU pigeon{kPidginID};
 // Define controller objects
@@ -73,6 +75,10 @@ double llTargetSize = 0.0;
 enum DriveMode{kArcadeDrive, kMecanumDrive};
 DriveMode driveMode = kArcadeDrive;
 bool togglePressed = false;
+// Define gripper mode variables
+enum GripperState{kClosed, kOpen};
+GripperState gripperState = kClosed;
+bool grabberOpen = false;
 
 class Robot : public frc::TimedRobot {
   public:
@@ -91,6 +97,7 @@ class Robot : public frc::TimedRobot {
     double liftArmY = grabberController.GetRawAxis(1);
     double rotateWristX = grabberController.GetRawAxis(4) * kThrottleCap;
     double pivotWristY = grabberController.GetRawAxis(5) * kThrottleCap;
+    bool grabberButton = grabberController.GetBButton();
 
     // Toggle drive mode if toggle button is pressed
     if (toggleButton && !togglePressed) {
@@ -149,7 +156,17 @@ class Robot : public frc::TimedRobot {
     // Pivot wrist
     pivotWrist.Set(pivotWristY);
     // Actuate grabber
-    
+    if (grabberButton && !grabberOpen) {
+      gripperState = (gripperState == kClosed) ? kOpen : kClosed;
+      grabberOpen = true;
+      if (gripperState == kClosed) {
+        solenoid3.Set(true);
+      } else {
+        solenoid3.Set(false);
+      }
+    } else if (!grabberButton) {
+      grabberOpen = false;
+    }
   }
 };
 
