@@ -39,6 +39,7 @@ const int kSolenoid3Channel = 2;
 const int kDriverPort = 0;
 const int kGrabberPort = 1;
 const double kThrottleCap = 0.6;
+const double kGripperCap = 0.25;
 
 // Define motor controller objects
 rev::CANSparkMax leftFront{kLeftFrontID, rev::CANSparkMax::MotorType::kBrushless};
@@ -95,8 +96,8 @@ class Robot : public frc::TimedRobot {
     // Get Grabber controller inputs
     double extendArmX = grabberController.GetRawAxis(0);
     double liftArmY = grabberController.GetRawAxis(1);
-    double rotateWristX = grabberController.GetRawAxis(4) * kThrottleCap;
-    double pivotWristY = grabberController.GetRawAxis(5) * kThrottleCap;
+    double rotateWristX = grabberController.GetRawAxis(4) * kGripperCap;
+    double pivotWristY = grabberController.GetRawAxis(5) * kGripperCap;
     bool grabberButton = grabberController.GetBButton();
 
     // Toggle drive mode if toggle button is pressed
@@ -148,7 +149,7 @@ class Robot : public frc::TimedRobot {
     }
 
     // Adjust lift arm
-    liftArm.Set(liftArmY);
+    liftArm.Set(-liftArmY);
     // Adjust extension arm
     extendArm.Set(extendArmX);
     // Rotate wrist
