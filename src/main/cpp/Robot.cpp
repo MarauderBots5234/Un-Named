@@ -24,7 +24,6 @@ const int kLeftFrontID = 1;
 const int kRightFrontID = 2;
 const int kLeftRearID = 3;
 const int kRightRearID = 4;
-const int kLiftMotorID = 5;
 const int kExtensionMotorID = 6;
 const int kWristRotationMotorID = 7;
 const int kWristPivotMotorID = 8;
@@ -32,21 +31,23 @@ const int kWristPivotMotorID = 8;
 const int kPidginID = 15;
 // Define solenoid IDs
 const int kPCMID = 0;
+const int k12vPCMID = 1;
 const int kSolenoid1Channel = 0;
 const int kSolenoid2Channel = 1;
 const int kSolenoid3Channel = 2;
+const int kSolenoid4Channel = 0;
+const int kSolenoid5Channel = 1;
 // Define drive station controller IDs
 const int kDriverPort = 0;
 const int kGrabberPort = 1;
 const double kThrottleCap = 0.6;
-const double kGripperCap = 0.25;
+const double kGripperCap = 0.15;
 
 // Define motor controller objects
 rev::CANSparkMax leftFront{kLeftFrontID, rev::CANSparkMax::MotorType::kBrushless};
 rev::CANSparkMax leftRear{kLeftRearID, rev::CANSparkMax::MotorType::kBrushless};
 rev::CANSparkMax rightFront{kRightFrontID, rev::CANSparkMax::MotorType::kBrushless};
 rev::CANSparkMax rightRear{kRightRearID, rev::CANSparkMax::MotorType::kBrushless};
-rev::CANSparkMax liftArm{kLiftMotorID, rev::CANSparkMax::MotorType::kBrushless};
 rev::CANSparkMax extendArm{kExtensionMotorID, rev::CANSparkMax::MotorType::kBrushless};
 rev::CANSparkMax rotateWrist{kWristRotationMotorID, rev::CANSparkMax::MotorType::kBrushless};
 rev::CANSparkMax pivotWrist{kWristPivotMotorID, rev::CANSparkMax::MotorType::kBrushless};
@@ -54,6 +55,8 @@ rev::CANSparkMax pivotWrist{kWristPivotMotorID, rev::CANSparkMax::MotorType::kBr
 frc::Solenoid solenoid1{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid1Channel};
 frc::Solenoid solenoid2{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid2Channel};
 frc::Solenoid solenoid3{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid3Channel};
+frc::Solenoid liftsolenoid4{k12vPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid4Channel};
+frc::Solenoid liftsolenoid5{k12vPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid5Channel};
 // Define Pigeon IMU object
 PigeonIMU pigeon{kPidginID};
 // Define controller objects
@@ -81,6 +84,10 @@ enum GripperState{kClosed, kOpen};
 GripperState gripperState = kClosed;
 bool grabberOpen = false;
 
+enum LiftMode{kUp, kDown};
+LiftMode LiftState = kUp;
+bool armLifted = true;
+
 class Robot : public frc::TimedRobot {
   public:
   void TeleopPeriodic() override {
@@ -95,10 +102,10 @@ class Robot : public frc::TimedRobot {
     bool brakeButton = driverController.GetBButton();
     // Get Grabber controller inputs
     double extendArmX = grabberController.GetRawAxis(0);
-    double liftArmY = grabberController.GetRawAxis(1);
     double rotateWristX = grabberController.GetRawAxis(4) * kGripperCap;
     double pivotWristY = grabberController.GetRawAxis(5) * kGripperCap;
     bool grabberButton = grabberController.GetBButton();
+    bool liftButton = grabberController.GetAButton();
 
     // Toggle drive mode if toggle button is pressed
     if (toggleButton && !togglePressed) {
@@ -148,8 +155,6 @@ class Robot : public frc::TimedRobot {
       rightRear.Set(steeringAdjust);
     }
 
-    // Adjust lift arm
-    liftArm.Set(-liftArmY);
     // Adjust extension arm
     extendArm.Set(extendArmX);
     // Rotate wrist
@@ -167,6 +172,21 @@ class Robot : public frc::TimedRobot {
       }
     } else if (!grabberButton) {
       grabberOpen = false;
+    }
+    
+    if (liftButton && !armLifted) {
+      LiftState = (LiftState == kUp) ? kDown : kUp;
+      armLifted = true;
+      // Toggle solenoids based on drive mode
+      if (LiftState == kArcadeDrive) {
+        liftsolenoid4.Set(true);
+        liftsolenoid5.Set(false);
+      } else {
+        liftsolenoid4.Set(false);
+        liftsolenoid5.Set(true);
+      }
+    } else if (!liftButton) {
+      armLifted = false;
     }
   }
 };
