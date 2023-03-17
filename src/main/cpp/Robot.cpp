@@ -35,8 +35,9 @@ const int k12vPCMID = 1;
 const int kSolenoid1Channel = 0;
 const int kSolenoid2Channel = 1;
 const int kSolenoid3Channel = 2;
-const int kSolenoid4Channel = 0;
-const int kSolenoid5Channel = 1;
+const int kSolenoid4Channel = 3;
+const int k12vSolenoid1Channel = 0;
+const int k12vSolenoid2Channel = 1;
 // Define drive station controller IDs
 const int kDriverPort = 0;
 const int kGrabberPort = 1;
@@ -54,9 +55,10 @@ rev::CANSparkMax pivotWrist{kWristPivotMotorID, rev::CANSparkMax::MotorType::kBr
 // Define solenoid objects
 frc::Solenoid mechanumsolenoid1{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid1Channel};
 frc::Solenoid mechanumsolenoid2{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid2Channel};
-frc::Solenoid grippersolenoid3{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid3Channel};
-frc::Solenoid liftsolenoid4{k12vPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid4Channel};
-frc::Solenoid liftsolenoid5{k12vPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid5Channel};
+frc::Solenoid grippersolenoid1{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid3Channel};
+frc::Solenoid grippersolenoid2{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid4Channel};
+frc::Solenoid liftsolenoid1{k12vPCMID, frc::PneumaticsModuleType::CTREPCM, k12vSolenoid1Channel};
+frc::Solenoid liftsolenoid2{k12vPCMID, frc::PneumaticsModuleType::CTREPCM, k12vSolenoid2Channel};
 // Define Pigeon IMU object
 PigeonIMU pigeon{kPidginID};
 // Define controller objects
@@ -90,7 +92,7 @@ bool armLifted = true;
 
 class Robot : public frc::TimedRobot {
   public:
-  void Robot::RobotInit() {
+  void RobotInit() {
   CameraServer::StartAutomaticCapture();
   cs::CvSink cvSink = frc::CameraServer::GetVideo();
   cs::CvSource outputStream = frc::CameraServer::PutVideo("Blur", 640, 480);
@@ -178,9 +180,11 @@ class Robot : public frc::TimedRobot {
       gripperState = (gripperState == kClosed) ? kOpen : kClosed;
       grabberOpen = true;
       if (gripperState == kClosed) {
-        grippersolenoid3.Set(true);
+        grippersolenoid1.Set(true);
+        grippersolenoid2.Set(false);
       } else {
-        grippersolenoid3.Set(false);
+        grippersolenoid1.Set(false);
+        grippersolenoid2.Set(true);
       }
     } else if (!grabberButton) {
       grabberOpen = false;
@@ -190,12 +194,12 @@ class Robot : public frc::TimedRobot {
       LiftState = (LiftState == kUp) ? kDown : kUp;
       armLifted = true;
       // Toggle solenoids based on drive mode
-      if (LiftState == kArcadeDrive) {
-        liftsolenoid4.Set(true);
-        liftsolenoid5.Set(false);
+      if (LiftState == kUp) {
+        liftsolenoid1.Set(true);
+        liftsolenoid2.Set(false);
       } else {
-        liftsolenoid4.Set(false);
-        liftsolenoid5.Set(true);
+        liftsolenoid1.Set(false);
+        liftsolenoid2.Set(true);
       }
     } else if (!liftButton) {
       armLifted = false;
