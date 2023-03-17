@@ -52,9 +52,9 @@ rev::CANSparkMax extendArm{kExtensionMotorID, rev::CANSparkMax::MotorType::kBrus
 rev::CANSparkMax rotateWrist{kWristRotationMotorID, rev::CANSparkMax::MotorType::kBrushless};
 rev::CANSparkMax pivotWrist{kWristPivotMotorID, rev::CANSparkMax::MotorType::kBrushless};
 // Define solenoid objects
-frc::Solenoid solenoid1{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid1Channel};
-frc::Solenoid solenoid2{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid2Channel};
-frc::Solenoid solenoid3{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid3Channel};
+frc::Solenoid mechanumsolenoid1{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid1Channel};
+frc::Solenoid mechanumsolenoid2{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid2Channel};
+frc::Solenoid grippersolenoid3{kPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid3Channel};
 frc::Solenoid liftsolenoid4{k12vPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid4Channel};
 frc::Solenoid liftsolenoid5{k12vPCMID, frc::PneumaticsModuleType::CTREPCM, kSolenoid5Channel};
 // Define Pigeon IMU object
@@ -113,11 +113,11 @@ class Robot : public frc::TimedRobot {
       togglePressed = true;
       // Toggle solenoids based on drive mode
       if (driveMode == kArcadeDrive) {
-        solenoid1.Set(true);
-        solenoid2.Set(false);
+        mechanumsolenoid1.Set(true);
+        mechanumsolenoid2.Set(false);
       } else {
-        solenoid1.Set(false);
-        solenoid2.Set(true);
+        mechanumsolenoid1.Set(false);
+        mechanumsolenoid2.Set(true);
       }
     } else if (!toggleButton) {
       togglePressed = false;
@@ -166,9 +166,9 @@ class Robot : public frc::TimedRobot {
       gripperState = (gripperState == kClosed) ? kOpen : kClosed;
       grabberOpen = true;
       if (gripperState == kClosed) {
-        solenoid3.Set(true);
+        grippersolenoid3.Set(true);
       } else {
-        solenoid3.Set(false);
+        grippersolenoid3.Set(false);
       }
     } else if (!grabberButton) {
       grabberOpen = false;
