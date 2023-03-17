@@ -93,6 +93,13 @@ class Robot : public frc::TimedRobot {
   void TeleopPeriodic() override {
     rightFront.SetInverted(true);
     rightRear.SetInverted(true);
+  leftFront.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  rightFront.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  leftRear.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  rightRear.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+    extendArm.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+    rotateWrist.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+    pivotWrist.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
     // Get Driver controller inputs
     double leftX = driverController.GetRawAxis(0) * kThrottleCap;
     double leftY = driverController.GetRawAxis(1) * kThrottleCap;
