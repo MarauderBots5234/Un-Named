@@ -90,6 +90,11 @@ bool armLifted = true;
 
 class Robot : public frc::TimedRobot {
   public:
+  void Robot::RobotInit() {
+  CameraServer::StartAutomaticCapture();
+  cs::CvSink cvSink = frc::CameraServer::GetVideo();
+  cs::CvSource outputStream = frc::CameraServer::PutVideo("Blur", 640, 480);
+  }
   void TeleopPeriodic() override {
     rightFront.SetInverted(true);
     rightRear.SetInverted(true);
